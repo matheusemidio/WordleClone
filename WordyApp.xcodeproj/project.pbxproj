@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C9604CD727C6A7260099E969 /* Word.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9604CD627C6A7260099E969 /* Word.swift */; };
+		C9604CDC27C6AB220099E969 /* WordNetworkHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9604CDB27C6AB220099E969 /* WordNetworkHelper.swift */; };
+		C9604CE027C7DFEE0099E969 /* Country.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9604CDF27C7DFEE0099E969 /* Country.swift */; };
+		C9604CE227C7E0020099E969 /* Response.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9604CE127C7E0020099E969 /* Response.swift */; };
 		C9E9A8C227BDF5AD00843546 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9E9A8C127BDF5AD00843546 /* AppDelegate.swift */; };
 		C9E9A8C427BDF5AD00843546 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9E9A8C327BDF5AD00843546 /* SceneDelegate.swift */; };
 		C9E9A8C627BDF5AD00843546 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9E9A8C527BDF5AD00843546 /* ViewController.swift */; };
@@ -16,6 +20,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		C9604CD627C6A7260099E969 /* Word.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Word.swift; sourceTree = "<group>"; };
+		C9604CDB27C6AB220099E969 /* WordNetworkHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WordNetworkHelper.swift; sourceTree = "<group>"; };
+		C9604CDF27C7DFEE0099E969 /* Country.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Country.swift; sourceTree = "<group>"; };
+		C9604CE127C7E0020099E969 /* Response.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Response.swift; sourceTree = "<group>"; };
 		C9E9A8BE27BDF5AD00843546 /* WordyApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WordyApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C9E9A8C127BDF5AD00843546 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C9E9A8C327BDF5AD00843546 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -37,6 +45,24 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		C9604CD427C6A57E0099E969 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				C9604CD627C6A7260099E969 /* Word.swift */,
+				C9604CDF27C7DFEE0099E969 /* Country.swift */,
+				C9604CE127C7E0020099E969 /* Response.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		C9604CDA27C6AB0D0099E969 /* Networking */ = {
+			isa = PBXGroup;
+			children = (
+				C9604CDB27C6AB220099E969 /* WordNetworkHelper.swift */,
+			);
+			path = Networking;
+			sourceTree = "<group>";
+		};
 		C9E9A8B527BDF5AD00843546 = {
 			isa = PBXGroup;
 			children = (
@@ -56,6 +82,8 @@
 		C9E9A8C027BDF5AD00843546 /* WordyApp */ = {
 			isa = PBXGroup;
 			children = (
+				C9604CDA27C6AB0D0099E969 /* Networking */,
+				C9604CD427C6A57E0099E969 /* Model */,
 				C9E9A8C127BDF5AD00843546 /* AppDelegate.swift */,
 				C9E9A8C327BDF5AD00843546 /* SceneDelegate.swift */,
 				C9E9A8C527BDF5AD00843546 /* ViewController.swift */,
@@ -139,8 +167,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				C9E9A8C627BDF5AD00843546 /* ViewController.swift in Sources */,
+				C9604CDC27C6AB220099E969 /* WordNetworkHelper.swift in Sources */,
+				C9604CD727C6A7260099E969 /* Word.swift in Sources */,
 				C9E9A8C227BDF5AD00843546 /* AppDelegate.swift in Sources */,
+				C9604CE027C7DFEE0099E969 /* Country.swift in Sources */,
 				C9E9A8C427BDF5AD00843546 /* SceneDelegate.swift in Sources */,
+				C9604CE227C7E0020099E969 /* Response.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
