@@ -151,18 +151,18 @@ class ViewController: UIViewController {
 
 
         
-        apiCall()
+        apiCallRandomWord()
                 
     }
 
-    func apiCall()
+    func apiCallRandomWord()
     {
         //This function will call the api and get a 20 words array of random words as a response
         
         //let url = URL(string: "https://api.dictionaryapi.dev/api/v2/entries/en/\(wordInput)")!
         let url = URL(string: "https://random-word-api.herokuapp.com/word?number=20&swear=0")!
         //let url = URL(string: "https://geodb-free-service.wirefreethought.com/v1/geo/countries?limit=5&hateoasMode=off")!
-        URLSession.shared.fetchData(at: url) { result in
+        URLSession.shared.fetchDataRandomWord(at: url) { result in
           switch result {
           case .success(let words):
               print("\nThe Array of words as a response is \(words)")
@@ -187,6 +187,53 @@ class ViewController: UIViewController {
 //        }
     }
     
+    func apiCallDictionary(guess : String)
+    {
+        
+        let url = URL(string: "https://api.dictionaryapi.dev/api/v2/entries/en/\(guess.lowercased())")!
+        //let url = URL(string: "https://geodb-free-service.wirefreethought.com/v1/geo/countries?limit=5&hateoasMode=off")!
+        URLSession.shared.fetchDataDictionary(at: url) { [self] result in
+          switch result {
+          case .success(let words):
+              print("\nThe response of the dictionary call is \(words)")
+              //self.responseGlobal = words
+              //self.pickWord(array: self.responseGlobal!)
+              self.checkGuess(dictionaryResponse: true)
+
+              
+          case .failure(let error):
+              print(error)
+              self.checkGuess(dictionaryResponse: false)
+          }
+        }
+        
+    }
+    
+    func checkGuess(dictionaryResponse : Bool)
+    {
+        if(dictionaryResponse)
+        {
+            //If it returns true, the guess was a valid word
+            gridCollumnNumber = 0
+            gridRowNumber += 1
+            
+        }
+        else
+        {
+            DispatchQueue.main.async
+            {
+                Dialog.ok(view: self, title: "Invalid word", message: "The word entered does not exist in the English dictionary.")
+                self.gridCollumnNumber = 0
+                self.grid[self.gridRowNumber][0].text = ""
+                self.grid[self.gridRowNumber][1].text = ""
+                self.grid[self.gridRowNumber][2].text = ""
+                self.grid[self.gridRowNumber][3].text = ""
+                self.grid[self.gridRowNumber][4].text = ""
+            }
+          
+        }
+    }
+    
     func pickWord(array : [String])
     {
         //This function will iterate through the array of random words and pick one that has 5 chars length
@@ -202,7 +249,7 @@ class ViewController: UIViewController {
         }
         if(condition == false)
         {
-            apiCall()
+            apiCallRandomWord()
         }
     }
 
@@ -220,13 +267,16 @@ class ViewController: UIViewController {
                 wordGuess += grid[gridRowNumber][2].text!
                 wordGuess += grid[gridRowNumber][3].text!
                 wordGuess += grid[gridRowNumber][4].text!
-                gridCollumnNumber = 0
-                gridRowNumber += 1
+                
                 
                 //Check if this word exists on API dictionary
                 lblTest.text = wordGuess
                 
                 //Check guess
+                
+                apiCallDictionary(guess: wordGuess)
+
+                
             }
             
         }
