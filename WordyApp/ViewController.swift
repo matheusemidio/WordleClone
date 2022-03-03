@@ -190,7 +190,7 @@ class ViewController: UIViewController {
     func apiCallDictionary(guess : String)
     {
         
-        let url = URL(string: "https://api.dictionaryapi.dev/api/v2/entries/en/\(guess.lowercased())")!
+        let url = URL(string: "https://api.dictionaryapi.dev/api/v2/entries/en/\(guess)")!
         //let url = URL(string: "https://geodb-free-service.wirefreethought.com/v1/geo/countries?limit=5&hateoasMode=off")!
         URLSession.shared.fetchDataDictionary(at: url) { [self] result in
           switch result {
@@ -229,6 +229,7 @@ class ViewController: UIViewController {
                 self.grid[self.gridRowNumber][2].text = ""
                 self.grid[self.gridRowNumber][3].text = ""
                 self.grid[self.gridRowNumber][4].text = ""
+                self.lblTest.text = "invalid"
             }
           
         }
@@ -262,11 +263,11 @@ class ViewController: UIViewController {
             if(gridCollumnNumber >= 4)
             {
                 //Check if guess is correct and if wrong, go to next row
-                wordGuess += grid[gridRowNumber][0].text!
-                wordGuess += grid[gridRowNumber][1].text!
-                wordGuess += grid[gridRowNumber][2].text!
-                wordGuess += grid[gridRowNumber][3].text!
-                wordGuess += grid[gridRowNumber][4].text!
+                wordGuess += grid[gridRowNumber][0].text!.lowercased()
+                wordGuess += grid[gridRowNumber][1].text!.lowercased()
+                wordGuess += grid[gridRowNumber][2].text!.lowercased()
+                wordGuess += grid[gridRowNumber][3].text!.lowercased()
+                wordGuess += grid[gridRowNumber][4].text!.lowercased()
                 
                 
                 //Check if this word exists on API dictionary
@@ -275,7 +276,39 @@ class ViewController: UIViewController {
                 //Check guess
                 
                 apiCallDictionary(guess: wordGuess)
-
+                //After the check of the guess, the lblTest will be our way to know if the guess was valid
+                //If the lblTest was set to invalid, the word is not on the dictionary, else, continue
+                
+                if(!lblTest.isEqual("invalid"))
+                {
+                    //Check each char of the guess to match with the word
+                    var counterIndex = 0
+                    for word in self.wordy!
+                    {
+                        
+                        let indexWord  = self.wordy!.firstIndex(of: word)
+                        if(wordGuess.contains(word))
+                        {
+                            //Now we have to check the index
+                            let indexGuess = wordGuess.firstIndex(of: word)
+                            
+                            if(indexWord == indexGuess)
+                            {
+                                guessUsedButtons[counterIndex].backgroundColor = .green
+                            }
+                            else
+                            {
+                                guessUsedButtons[counterIndex].backgroundColor = .yellow
+                            }
+                            
+                            
+                        }
+                        
+                        //We need to delete every char temporary from the word and the guess, in case we have repetitive chars, because in this case, getting the first index would generate a problem for us.
+                        counterIndex += 1
+                    }
+                }
+                
                 
             }
             
