@@ -14,6 +14,7 @@ class ViewController: UIViewController {
     //Declaration of variables
     public var responseGlobal : [String]?
     public var wordy : String?
+    public var wordyDict = Dictionary<Character, Int>()
     private var rowA = [UILabel]()
     private var rowB = [UILabel]()
     private var rowC = [UILabel]()
@@ -150,7 +151,7 @@ class ViewController: UIViewController {
         grid.append(rowG)
 
 
-        
+        //self.wordy = "leash"
         apiCallRandomWord()
                 
     }
@@ -242,9 +243,21 @@ class ViewController: UIViewController {
         var condition : Bool = false
         for element in array{
             if(element.count == 5){
-                self.wordy = element
-                print("\nThe wordy is \(self.wordy!)\n")
-                condition = true
+                
+                //Confirm if the word generated is really a word in the dictionary
+                apiCallDictionary(guess: element)
+                if(!lblTest.isEqual("invalid"))
+                {
+                    self.wordy = element
+                    print("\nThe wordy is \(self.wordy!)\n")
+                    condition = true
+                    fillWordyDictionary()
+
+                }
+                DispatchQueue.main.async
+                {
+                    self.lblTest.text = self.wordy!
+                }
                 break
             }
         }
@@ -254,6 +267,14 @@ class ViewController: UIViewController {
         }
     }
 
+    func fillWordyDictionary()
+    {
+        for (index, letter) in self.wordy!.enumerated()
+        {
+            self.wordyDict[letter] = index
+        }
+        
+    }
     
     @IBAction func btnSubmitTouchUp(_ sender: Any) {
         var wordGuess : String = ""
@@ -271,7 +292,7 @@ class ViewController: UIViewController {
                 
                 
                 //Check if this word exists on API dictionary
-                lblTest.text = wordGuess
+                //lblTest.text = wordGuess
                 
                 //Check guess
                 
@@ -281,32 +302,64 @@ class ViewController: UIViewController {
                 
                 if(!lblTest.isEqual("invalid"))
                 {
+                    //Check if player won the game
+                    if(self.wordy == wordGuess)
+                    {
+                        Dialog.ok(view: self, title: "Victory", message: "Congratulations, you guessed the word correctly.")
+                        //Reset the game with a new randomly generated word
+                    }
+                    
                     //Check each char of the guess to match with the word
                     var counterIndex = 0
-                    for word in self.wordy!
+                    for (index, letterGuess) in wordGuess.enumerated()
                     {
+                        //let indexWord  = (self.wordy!.index(of: letter)) - 1
+                        //if(wordGuess.contains(self.wordyDict[index]!))
                         
-                        let indexWord  = self.wordy!.firstIndex(of: word)
-                        if(wordGuess.contains(word))
+                        if self.wordyDict[letterGuess] != nil
                         {
                             //Now we have to check the index
-                            let indexGuess = wordGuess.firstIndex(of: word)
+                            //let indexGuess = wordGuess.firstIndex(of: letter)
                             
-                            if(indexWord == indexGuess)
+                            if((self.wordyDict[letterGuess]) == index)
                             {
+//                                if(guessUsedButtons[counterIndex].backgroundColor != .green &&
+//                                   guessUsedButtons[counterIndex].backgroundColor != .red)
+//                                {
+//                                    guessUsedButtons[counterIndex].backgroundColor = .green
+//                                }
                                 guessUsedButtons[counterIndex].backgroundColor = .green
+
                             }
                             else
                             {
+//                                if(guessUsedButtons[counterIndex].backgroundColor != .green &&
+//                                   guessUsedButtons[counterIndex].backgroundColor != .red &&
+//                                   guessUsedButtons[counterIndex].backgroundColor != .yellow)
+//                                {
+//                                    guessUsedButtons[counterIndex].backgroundColor = .yellow
+//                                }
                                 guessUsedButtons[counterIndex].backgroundColor = .yellow
+
+
                             }
-                            
-                            
+                        }
+                        //Letter is not correct
+                        else{
+                            if(guessUsedButtons[counterIndex].backgroundColor != .green &&
+                               guessUsedButtons[counterIndex].backgroundColor != .red &&
+                               guessUsedButtons[counterIndex].backgroundColor != .yellow)
+                            {
+                                guessUsedButtons[counterIndex].backgroundColor = .red
+                            }
                         }
                         
                         //We need to delete every char temporary from the word and the guess, in case we have repetitive chars, because in this case, getting the first index would generate a problem for us.
                         counterIndex += 1
                     }
+                    //After checking we need to empty the used buttons array to receive new ones
+                    guessUsedButtons.removeAll()
+                
                 }
                 
                 
