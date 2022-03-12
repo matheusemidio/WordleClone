@@ -13,8 +13,16 @@ class ViewController: UIViewController {
     
     //Declaration of variables
     public var responseGlobal : [String]?
-    public var wordy : String?
-    public var wordyDict = Dictionary<Character, Int>()
+    public var wordle : String?
+    public var guess : String?
+    public var wordyDict = Dictionary<Int, Character>()
+    public var debugMode : Bool = true
+    private var guessUsedButtons = [UIButton]()
+    private var gridRowNumber = 0
+    private var gridCollumnNumber = 0
+
+
+    
     private var rowA = [UILabel]()
     private var rowB = [UILabel]()
     private var rowC = [UILabel]()
@@ -23,9 +31,8 @@ class ViewController: UIViewController {
     private var rowF = [UILabel]()
     private var rowG = [UILabel]()
     private var grid = [[UILabel]]()
-    private var guessUsedButtons = [UIButton]()
-    private var gridRowNumber = 0
-    private var gridCollumnNumber = 0
+   
+    
 
     //Declaration of outlets
     @IBOutlet weak var lblTest: UILabel!
@@ -151,242 +158,302 @@ class ViewController: UIViewController {
         grid.append(rowG)
 
 
-        //self.wordy = "leash"
+        //self.wordle = "leash"
+        //lblTest.text = self.wordle
+        //fillWordyDictionary()
+
         apiCallRandomWord()
                 
     }
 
+    //This function will call the API to get an array of randomized words
     func apiCallRandomWord()
     {
-        //This function will call the api and get a 20 words array of random words as a response
-        
         //let url = URL(string: "https://api.dictionaryapi.dev/api/v2/entries/en/\(wordInput)")!
-        let url = URL(string: "https://random-word-api.herokuapp.com/word?number=20&swear=0")!
         //let url = URL(string: "https://geodb-free-service.wirefreethought.com/v1/geo/countries?limit=5&hateoasMode=off")!
+        let url = URL(string: "https://random-word-api.herokuapp.com/word?number=20&swear=0")!
         URLSession.shared.fetchDataRandomWord(at: url) { result in
           switch result {
           case .success(let words):
-              print("\nThe Array of words as a response is \(words)")
-              self.responseGlobal = words
-              self.pickWord(array: self.responseGlobal!)
-              
-          case .failure(let error):
-              print(error)
-          }
-        }
-        
-   
-//        let url = URL(string: "http://geodb-free-service.wirefreethought.com/v1/geo/countries?limit=5&hateoasMode=off")!
-//        URLSession.shared.fetchData(at: url) { result in
-//          switch result {
-//          case .success(let apiResponse):
-//              print("\nThe word is \(apiResponse)")
-//              //self.responseGlobal = word[0].word
-//          case .failure(let error):
-//              print(error)
-//          }
-//        }
-    }
-    
-    func apiCallDictionary(guess : String)
-    {
-        
-        let url = URL(string: "https://api.dictionaryapi.dev/api/v2/entries/en/\(guess)")!
-        //let url = URL(string: "https://geodb-free-service.wirefreethought.com/v1/geo/countries?limit=5&hateoasMode=off")!
-        URLSession.shared.fetchDataDictionary(at: url) { [self] result in
-          switch result {
-          case .success(let words):
-              print("\nThe response of the dictionary call is \(words)")
+              print("\nArray of words as a response is --> \(words)\n")
               //self.responseGlobal = words
-              //self.pickWord(array: self.responseGlobal!)
-              self.checkGuess(dictionaryResponse: true)
-
+              
+              //Now we have to pick one word from the array that meets the criterias
+              self.pickWord(array: words)
               
           case .failure(let error):
-              print(error)
-              self.checkGuess(dictionaryResponse: false)
+              DispatchQueue.main.async
+              {
+                  Dialog.ok(view: self, title: "Error", message: "Failed to make request to API.")
+                  print(error)
+              }
+              
           }
         }
-        
     }
     
-    func checkGuess(dictionaryResponse : Bool)
-    {
-        if(dictionaryResponse)
-        {
-            //If it returns true, the guess was a valid word
-            gridCollumnNumber = 0
-            gridRowNumber += 1
-            
-        }
-        else
-        {
-            DispatchQueue.main.async
-            {
-                Dialog.ok(view: self, title: "Invalid word", message: "The word entered does not exist in the English dictionary.")
-                self.gridCollumnNumber = 0
-                self.grid[self.gridRowNumber][0].text = ""
-                self.grid[self.gridRowNumber][1].text = ""
-                self.grid[self.gridRowNumber][2].text = ""
-                self.grid[self.gridRowNumber][3].text = ""
-                self.grid[self.gridRowNumber][4].text = ""
-                self.lblTest.text = "invalid"
-            }
-          
-        }
-    }
-    
+    //Continuing from the success thread of the Random Word API -> This function will iterate through the array and pick one word that meets all the criterias: have 5 chars and be a real word on the english dictionary
     func pickWord(array : [String])
     {
-        //This function will iterate through the array of random words and pick one that has 5 chars length
-        
-        var condition : Bool = false
+        var metCriteria : Bool = false
+        var chosenWord : String = ""
         for element in array{
-            if(element.count == 5){
-                
-                //Confirm if the word generated is really a word in the dictionary
-                apiCallDictionary(guess: element)
-                if(!lblTest.isEqual("invalid"))
-                {
-                    self.wordy = element
-                    print("\nThe wordy is \(self.wordy!)\n")
-                    condition = true
-                    fillWordyDictionary()
-
-                }
-                DispatchQueue.main.async
-                {
-                    self.lblTest.text = self.wordy!
-                }
+            if(hasCorrectLength(strParameter: element))
+            {
+                metCriteria = true
+                chosenWord = element
                 break
+                //apiCallDictionary(str: element, mode: "word")
+            }
+            else
+            {
+                metCriteria = false
             }
         }
-        if(condition == false)
+        
+        //None of the words from the array met the criteria of 5 chars, call again
+        if(metCriteria == false)
         {
             apiCallRandomWord()
         }
-    }
-
-    func fillWordyDictionary()
-    {
-        for (index, letter) in self.wordy!.enumerated()
+        else
         {
-            self.wordyDict[letter] = index
+            apiCallDictionary(str: chosenWord, mode: "word")
+        }
+
+    }
+    
+    //This function will call the english dictionary API to check if the string passes is valid
+    func apiCallDictionary(str : String, mode : String)
+    {
+        
+        let url = URL(string: "https://api.dictionaryapi.dev/api/v2/entries/en/\(str)")!
+        //let url = URL(string: "https://geodb-free-service.wirefreethought.com/v1/geo/countries?limit=5&hateoasMode=off")!
+        URLSession.shared.fetchDataDictionary(at: url) { result in
+          switch result {
+          case .success(let words):
+              print("\nDictionary response -> \(words)")
+              if(mode == "word")
+              {
+                  //Set the global variable
+                  self.wordle = str
+                  self.fillWordyDictionary()
+                  if(self.debugMode == true)
+                  {
+                      DispatchQueue.main.async
+                      {
+                          self.lblTest.text = self.wordle
+                      }
+                  }
+              }
+              else if(mode == "guess")
+              {
+                  //Call function to compare with wordle
+                  self.guess = str
+                  self.guessProcedureCheck(arrayOfButtons : self.guessUsedButtons)
+              }
+              //Show waiting screen after
+              
+          case .failure(let error):
+              print(error)
+              if(mode == "word")
+              {
+                  self.apiCallRandomWord()
+              }
+              else if(mode == "guess")
+              {
+                  DispatchQueue.main.async
+                  {
+                      Dialog.ok(view: self, title: "Invalid word", message: "The word entered does not exist in the English dictionary.")
+                      self.resetGuess()
+                  }
+
+              }
+          }
+            
         }
         
     }
     
+    //Continuing from the success thread of the Dictionary API -> This function will put the word into a dictionary with the char as the key and the index as the value to facilitate iteration later
+    func fillWordyDictionary()
+    {
+        for (index, letter) in self.wordle!.enumerated()
+        {
+            self.wordyDict[index] = letter
+        }
+    }
+    
+    //This function will check if the string has the correct amount of chars we need
+    func hasCorrectLength(strParameter : String) -> Bool
+    {
+        if(strParameter.count == 5)
+        {
+            return true
+        }
+        return false
+    }
+    
+    //Continuing from the success thread of the Dictionary API -> This function will put the word into a dictionary with the char as the key and the index as the value to facilitate iteration later
+    func guessProcedureCheck(arrayOfButtons : [UIButton])
+    {
+        //Check if it's the correct guess
+        if(!isCorrectGuess(guess: self.guess!))
+        {
+            //Check each char of the guess to match with the word
+            for (index, letterGuess) in self.guess!.enumerated()
+            {
+                //Update view on the main thread right away
+            
+                //Chang key from letter to be the index in order to fix the problem with repetitive words
+                if(self.wordyDict.values.contains(letterGuess) == true)
+                //if self.wordyDict[letterGuess] != nil
+                {
+                    //if((self.wordyDict[letterGuess]) == index)
+                    if(self.wordyDict[index] == letterGuess)
+                    {
+                        DispatchQueue.main.async
+                        {
+                            arrayOfButtons[index].backgroundColor = .green
+                        }
+                    }
+                    else
+                    {
+                        if(arrayOfButtons[index].backgroundColor != .green && arrayOfButtons[index].backgroundColor != .red && arrayOfButtons[index].backgroundColor != .yellow)
+                        {
+                            DispatchQueue.main.async
+                            {
+                                arrayOfButtons[index].backgroundColor = .yellow
+                            }
+                        }
+                        
+                    }
+                }
+                //Letter is not correct
+                else
+                {
+                    DispatchQueue.main.async
+                    {
+                        //Modify the background only if it was never modified before
+                        if(arrayOfButtons[index].backgroundColor != .green && arrayOfButtons[index].backgroundColor != .red && arrayOfButtons[index].backgroundColor != .yellow)
+                        {
+                            
+                                arrayOfButtons[index].backgroundColor = .red
+                            
+                        }
+                    }
+                }
+                
+            }
+            //After checking we need to empty the used buttons array to receive new ones and reset to receive a new guess
+            self.guessUsedButtons.removeAll()
+            self.gridCollumnNumber = 0
+            self.gridRowNumber += 1
+            
+            //Check if player still has guesses available
+            if(self.gridRowNumber == 5)
+            {
+                DispatchQueue.main.async
+                {
+                    Dialog.ok(view: self, title: "Defeat", message: "You exceeded the number of guesses.")
+                    //Call Dialog asking if the player wants to reset the game and if yes, call the function to do so
+                    self.gridRowNumber = 0
+                    self.gridCollumnNumber = 0
+                    self.apiCallRandomWord()
+                }
+           
+            }
+        }
+    }
+    
+    func isCorrectGuess(guess : String) -> Bool
+    {
+        //Player guessed the word
+        if(self.wordle == guess)
+        {
+            DispatchQueue.main.async
+            {
+                Dialog.ok(view: self, title: "Victory", message: "Congratulations, you guessed the word correctly.")
+                self.resetGuess()
+                self.gridCollumnNumber = 0
+            }
+            return true
+            //Reset the game with a new randomly generated word
+        }
+        return false
+    }
+    
+   func resetGuess()
+    {
+        self.gridCollumnNumber = 0
+        self.grid[self.gridRowNumber][0].text = ""
+        self.grid[self.gridRowNumber][1].text = ""
+        self.grid[self.gridRowNumber][2].text = ""
+        self.grid[self.gridRowNumber][3].text = ""
+        self.grid[self.gridRowNumber][4].text = ""
+    }
+
+    
+    //This function will be triggered when the player presses the submit button.
     @IBAction func btnSubmitTouchUp(_ sender: Any) {
         var wordGuess : String = ""
         if(gridRowNumber >= 0 && gridRowNumber <= 6)
         {
-            //Word is finished
+            //Word guess is finished
             if(gridCollumnNumber >= 4)
             {
-                //Check if guess is correct and if wrong, go to next row
+                //Saving each char of the guess to compose the wordGuess
                 wordGuess += grid[gridRowNumber][0].text!.lowercased()
                 wordGuess += grid[gridRowNumber][1].text!.lowercased()
                 wordGuess += grid[gridRowNumber][2].text!.lowercased()
                 wordGuess += grid[gridRowNumber][3].text!.lowercased()
                 wordGuess += grid[gridRowNumber][4].text!.lowercased()
                 
-                
-                //Check if this word exists on API dictionary
-                //lblTest.text = wordGuess
-                
-                //Check guess
-                
-                apiCallDictionary(guess: wordGuess)
-                //After the check of the guess, the lblTest will be our way to know if the guess was valid
-                //If the lblTest was set to invalid, the word is not on the dictionary, else, continue
-                
-                if(!lblTest.isEqual("invalid"))
+                //Check if has the correct length
+                if(hasCorrectLength(strParameter: wordGuess))
                 {
-                    //Check if player won the game
-                    if(self.wordy == wordGuess)
+                    apiCallDictionary(str: wordGuess, mode: "guess")
+                }
+                else
+                {
+                    DispatchQueue.main.async
                     {
-                        Dialog.ok(view: self, title: "Victory", message: "Congratulations, you guessed the word correctly.")
-                        //Reset the game with a new randomly generated word
+                        self.resetGuess()
+                        Dialog.ok(view: self, title: "Invalid guess", message: "Incorect amount of chars.")
                     }
                     
-                    //Check each char of the guess to match with the word
-                    var counterIndex = 0
-                    for (index, letterGuess) in wordGuess.enumerated()
-                    {
-                        //let indexWord  = (self.wordy!.index(of: letter)) - 1
-                        //if(wordGuess.contains(self.wordyDict[index]!))
-                        
-                        if self.wordyDict[letterGuess] != nil
-                        {
-                            //Now we have to check the index
-                            //let indexGuess = wordGuess.firstIndex(of: letter)
-                            
-                            if((self.wordyDict[letterGuess]) == index)
-                            {
-//                                if(guessUsedButtons[counterIndex].backgroundColor != .green &&
-//                                   guessUsedButtons[counterIndex].backgroundColor != .red)
-//                                {
-//                                    guessUsedButtons[counterIndex].backgroundColor = .green
-//                                }
-                                guessUsedButtons[counterIndex].backgroundColor = .green
-
-                            }
-                            else
-                            {
-//                                if(guessUsedButtons[counterIndex].backgroundColor != .green &&
-//                                   guessUsedButtons[counterIndex].backgroundColor != .red &&
-//                                   guessUsedButtons[counterIndex].backgroundColor != .yellow)
-//                                {
-//                                    guessUsedButtons[counterIndex].backgroundColor = .yellow
-//                                }
-                                guessUsedButtons[counterIndex].backgroundColor = .yellow
-
-
-                            }
-                        }
-                        //Letter is not correct
-                        else{
-                            if(guessUsedButtons[counterIndex].backgroundColor != .green &&
-                               guessUsedButtons[counterIndex].backgroundColor != .red &&
-                               guessUsedButtons[counterIndex].backgroundColor != .yellow)
-                            {
-                                guessUsedButtons[counterIndex].backgroundColor = .red
-                            }
-                        }
-                        
-                        //We need to delete every char temporary from the word and the guess, in case we have repetitive chars, because in this case, getting the first index would generate a problem for us.
-                        counterIndex += 1
-                    }
-                    //After checking we need to empty the used buttons array to receive new ones
-                    guessUsedButtons.removeAll()
-                
                 }
-                
-                
+
             }
-            
         }
     }
     
+    //This function will be triggered when the player presses the delete button
     @IBAction func btnDeleteTouchUp(_ sender: Any)
     {
+        //Check if word guess is finished
         if(gridRowNumber >= 0 && gridRowNumber <= 6)
         {
-            //Word is finished
+            //Check if the player already deleted every char from the guess
             if(gridCollumnNumber >= 0)
             {
-                grid[gridRowNumber][gridCollumnNumber].text = ""
-                guessUsedButtons.popLast()
-                if(gridCollumnNumber != 0)
+                DispatchQueue.main.async
                 {
-                    gridCollumnNumber -= 1
+                    self.grid[self.gridRowNumber][self.gridCollumnNumber].text = ""
+                    self.guessUsedButtons.removeLast()
+                    if(self.gridCollumnNumber > 0)
+                    {
+                        self.gridCollumnNumber -= 1
+                    }
                 }
+          
             }
             
         }
     }
     
     
+    //Declaration of Actions for the keyboard
     @IBAction func btnA(_ sender: Any) {
         if(gridRowNumber >= 0 && gridRowNumber <= 6)
         {
