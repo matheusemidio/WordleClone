@@ -158,8 +158,8 @@ class ViewController: UIViewController {
         grid.append(rowG)
 
 
-        //self.wordle = "leash"
-        //lblTest.text = self.wordle
+        //self.wordle = "pizza"
+        //self.lblTest.text = "DebugMode: " + String(self.wordle!)
         //fillWordyDictionary()
 
         apiCallRandomWord()
@@ -242,7 +242,7 @@ class ViewController: UIViewController {
                   {
                       DispatchQueue.main.async
                       {
-                          self.lblTest.text = self.wordle
+                          self.lblTest.text = "DebugMode: " + String(self.wordle!)
                       }
                   }
               }
@@ -373,6 +373,11 @@ class ViewController: UIViewController {
         {
             DispatchQueue.main.async
             {
+                self.guessUsedButtons[0].backgroundColor = .green
+                self.guessUsedButtons[1].backgroundColor = .green
+                self.guessUsedButtons[2].backgroundColor = .green
+                self.guessUsedButtons[3].backgroundColor = .green
+                self.guessUsedButtons[4].backgroundColor = .green
                 Dialog.ok(view: self, title: "Victory", message: "Congratulations, you guessed the word correctly.")
                 self.resetGuess()
                 self.gridCollumnNumber = 0
